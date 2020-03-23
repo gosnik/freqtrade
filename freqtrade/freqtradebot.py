@@ -589,6 +589,22 @@ class FreqtradeBot:
         # Send the message
         self.rpc.send_msg(msg)
 
+    def _notify_filled(self, trade: Trade, order: Dict) -> None:
+        """
+        Sends rpc notification when a buy/sell is filled.
+        """
+
+        pair = trade.pair
+        side = order['side']
+
+        msg = {
+            'type': RPCMessageType.CUSTOM_NOTIFICATION,
+            'status': f'*{side} filled:* `{pair}`'
+        }
+
+        # Send the message
+        self.rpc.send_msg(msg)
+
 #
 # SELL / exit positions / close trades logic and methods
 #
@@ -1151,6 +1167,7 @@ class FreqtradeBot:
             # Updating wallets when order is closed
             if not trade.is_open:
                 self.wallets.update()
+                self._notify_filled(trade, order)
 
     def get_real_amount(self, trade: Trade, order: Dict, order_amount: float = None) -> float:
         """
