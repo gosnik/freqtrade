@@ -83,16 +83,16 @@ class Strategy006(IStrategy):
         """
 
         # ADX
-        dataframe['adx'] = ta.ADX(dataframe)
-        dataframe['slowadx'] = ta.ADX(dataframe, 2)
+        #dataframe['adx'] = ta.ADX(dataframe)
+        #dataframe['slowadx'] = ta.ADX(dataframe, 2)
 
         # MFI
-        dataframe['mfi'] = ta.MFI(dataframe)
+        #dataframe['mfi'] = ta.MFI(dataframe)
 
         # MACD the difference between an instrument's 26-day and 12-day exponential moving averages (EMA)
-        macd = ta.MACD(dataframe)
-        dataframe['macd'] = macd['macd']
-        dataframe['macdsignal'] = macd['macdsignal']
+        #macd = ta.MACD(dataframe)
+        #dataframe['macd'] = macd['macd']
+        #dataframe['macdsignal'] = macd['macdsignal']
 
         # Minus Directional Indicator / Movement
         dataframe['minus_di'] = ta.MINUS_DI(dataframe)
@@ -126,9 +126,9 @@ class Strategy006(IStrategy):
         dataframe['fastd-previous'] = dataframe.fastd.shift(1)
 
         # Stoch
-        stoch = ta.STOCH(dataframe)
-        dataframe['slowd'] = stoch['slowd']
-        dataframe['slowk'] = stoch['slowk']
+        #stoch = ta.STOCH(dataframe)
+        #dataframe['slowd'] = stoch['slowd']
+        #dataframe['slowk'] = stoch['slowk']
 
         # Hilbert Transform Indicator - SineWave
         hilbert = ta.HT_SINE(dataframe)
@@ -142,7 +142,7 @@ class Strategy006(IStrategy):
         dataframe['sar'] = ta.SAR(dataframe)
 
         # SMA - Simple Moving Average
-        dataframe['sma'] = ta.SMA(dataframe, timeperiod=40)
+        #dataframe['sma'] = ta.SMA(dataframe, timeperiod=40)
 
         heikinashi = qtpylib.heikinashi(dataframe)
         dataframe['ha_open'] = heikinashi['open']
@@ -161,19 +161,13 @@ class Strategy006(IStrategy):
             (
                 (dataframe['rsi'] > 0)
                 & (dataframe['rsi'] < 85)
-                #& (dataframe['mfi'] > 10.0)
                 & (dataframe['close'] > 0.00000200)
                 & (dataframe['close'] < dataframe['ema13'])
                 & (dataframe['bb_upperband'] > dataframe['ema8'])
-                #& (dataframe['close'] > dataframe['bb_lowerband'])
-                #& (dataframe['slowd'] > dataframe['slowk'])
-                #& (dataframe['slowd'] > 0)
-                #& (dataframe['fastd'] > dataframe['fastk'])
-                #& (dataframe['fastd'] > 0)
-                #& (dataframe['fisher_rsi'] < -0.94)
+                & (dataframe['ha_open'] < dataframe['ha_close'])
                 & (dataframe['fisher_rsi'] < 0)
-                #& (qtpylib.crossed_above(dataframe['htleadsine'], dataframe['htsine']))
                 & (dataframe['htleadsine'] < 0)
+                #& (qtpylib.crossed_above(dataframe['htleadsine'], dataframe['htsine']))
             ),
             'buy'] = 1
 
@@ -191,17 +185,13 @@ class Strategy006(IStrategy):
             & (dataframe['minus_di'] > 0)
             & (dataframe['sar'] > dataframe['close'])
             & (
-                (qtpylib.crossed_below(dataframe['htleadsine'], dataframe['htsine']))
+                (dataframe['ha_open'] > dataframe['ha_close'])  # red bar
+                | (dataframe['bb_midband'] < dataframe['ema2'])
+                | (qtpylib.crossed_below(dataframe['htleadsine'], dataframe['htsine']))
                 | (
                     (dataframe['fastk-previous'] < dataframe['fastd-previous'])
                     & (dataframe['fastd'] < dataframe['fastk'])
                 )
-                | (dataframe['bb_midband'] < dataframe['ema2'])
-                # | (
-                #     ((dataframe['fastk'] > 70) | (dataframe['fastd'] > 70)) &
-                #     (dataframe['fastk-previous'] < dataframe['fastd-previous']) &
-                #     (dataframe['close'] > dataframe['ema2'])
-                # )
             )
             , 'sell'] = 1
         return dataframe
